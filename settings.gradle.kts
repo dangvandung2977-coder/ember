@@ -21,6 +21,7 @@ include(
     "expedition",
     "mobs",
     "events",
+    "progression",
     "settlement",
     "economy",
     "dist"

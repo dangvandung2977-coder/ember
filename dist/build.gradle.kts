@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":expedition"))
     implementation(project(":mobs"))
     implementation(project(":events"))
+    implementation(project(":progression"))
     implementation(project(":settlement"))
     implementation(project(":economy"))
     // Shared "ember" PlaceholderExpansion lives in core but extends a PlaceholderAPI type;
@@ -107,6 +108,7 @@ val fatJar = tasks.register<Jar>("buildFatJar") {
     dependsOn(rootProject.project(":expedition").tasks.named("jar"))
     dependsOn(rootProject.project(":mobs").tasks.named("jar"))
     dependsOn(rootProject.project(":events").tasks.named("jar"))
+    dependsOn(rootProject.project(":progression").tasks.named("jar"))
     dependsOn(rootProject.project(":settlement").tasks.named("jar"))
     dependsOn(rootProject.project(":economy").tasks.named("jar"))
 }

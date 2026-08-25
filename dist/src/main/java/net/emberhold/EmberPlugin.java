@@ -7,6 +7,7 @@ import net.emberhold.core.impl.EmberPlaceholderExpansion;
 import net.emberhold.economy.EmberEconomyModule;
 import net.emberhold.events.EmberEventsModule;
 import net.emberhold.expedition.EmberExpeditionModule;
+import net.emberhold.progression.EmberProgressionModule;
 import net.emberhold.settlement.EmberSettlementModule;
 import net.emberhold.shelter.EmberShelterModule;
 import net.emberhold.storm.StormModule;
@@ -43,6 +44,7 @@ public final class EmberPlugin extends JavaPlugin {
         register(new EmberShelterModule(this));
         register(new EmberExpeditionModule(this));
         register(new EmberEventsModule(this));
+        register(new EmberProgressionModule(this));
         register(new EmberSettlementModule(this));
         register(new EmberEconomyModule(this));
         bootstrap.boot();
