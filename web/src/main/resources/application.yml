@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: ember-web
+  datasource:
+    url: ${EMBER_DB_URL:jdbc:postgresql://localhost:5432/ember_dev}
+    username: ${EMBER_DB_USER:ember_read}
+    password: ${EMBER_DB_PASSWORD:ember_read}
+    hikari:
+      readonly: true
+      maximum-pool-size: ${EMBER_DB_POOL:5}
+
+server:
+  port: ${EMBER_WEB_PORT:8080}
+
+ember:
+  web:
+    # Staff bearer token gating /api/* and the admin UI.
+    token: ${EMBER_WEB_TOKEN:change-me}
+    # Discord webhook for anomaly alerts (optional).
+    discord-webhook: ${EMBER_WEB_DISCORD_WEBHOOK:}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EmberHold · Ops</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">❄️ EmberHold <span class="sub">Ops &amp; Analytics</span></div>
+    <div class="login">
+      <input id="token" type="password" placeholder="staff token" autocomplete="off">
+      <button id="connect">Connect</button>
+      <span id="status" class="status"></span>
+    </div>
+  </header>
+
+  <main id="app" hidden>
+    <section class="cards">
+      <div class="card"><b id="c-players">–</b><span>players</span></div>
+      <div class="card"><b id="c-holds">–</b><span>holds</span></div>
+      <div class="card"><b id="c-events">–</b><span>event runs</span></div>
+      <div class="card"><b id="c-scrip">–</b><span>scrip in circulation</span></div>
+      <div class="card"><b id="c-notes">–</b><span>notes holders</span></div>
+      <div class="card"><b id="c-dau">–</b><span>DAU today</span></div>
+      <div class="card"><b id="c-ccu">–</b><span>CCU peak today</span></div>
+      <div class="card"><b id="c-tables">–</b><span>DB tables</span></div>
+    </section>
+
+    <section class="panel">
+      <h2>Scrip flow — last 14 days</h2>
+      <canvas id="economy" width="900" height="220"></canvas>
+    </section>
+
+    <section class="panel">
+      <h2>Players <input id="q" placeholder="search name…"></h2>
+      <table id="players"><thead><tr><th>name</th><th>playtime</th><th>last seen</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Recent events</h2>
+        <table id="events"><thead><tr><th>event</th><th>started</th><th>ended</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="panel">
+        <h2>Audit log</h2>
+        <table id="audit"><thead><tr><th>actor</th><th>action</th><th>target</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Holds</h2>
+        <table id="holds"><thead><tr><th>name</th><th>owner</th><th>lvl</th><th>members</th><th>treasury</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="panel">
+        <h2>Progression (field notes)</h2>
+        <table id="progression"><thead><tr><th>uuid</th><th>notes spent</th><th>updated</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
