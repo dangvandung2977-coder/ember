@@ -1,10 +1,14 @@
 package net.emberhold.temperature;
 
 import net.emberhold.core.api.EmberApi;
+import net.emberhold.core.api.EmberPlaceholderSource;
 import net.emberhold.core.api.Module;
 import net.emberhold.core.api.ScheduledTask;
 import net.emberhold.temperature.api.ExposureVerdict;
+import net.emberhold.temperature.api.StormClimate;
+import net.emberhold.temperature.api.StormWeatherProvider;
 import net.emberhold.temperature.api.TempState;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -12,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * EmberTemperature module: the T11 tick loop (spec 02 §1–2).
@@ -27,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Constructed by the dist aggregator with just the plugin and a {@link WarmthModel};
  * the {@link EmberApi} (schedulers, DB) is bound in {@link #onEnable}.</p>
  */
-public final class TemperatureModule implements Module {
+public final class TemperatureModule implements Module, EmberPlaceholderSource {
 
     /** Seconds per 20-tick update (spec §1: 20 ticks = 1 s). */
     private static final double DT_SECONDS = 1.0;
@@ -62,6 +67,22 @@ public final class TemperatureModule implements Module {
     /** The underlying engine (for quit-flush, admin commands, tests). */
     public WarmthEngine engine() {
         return engine;
+    }
+
+    private volatile WarmthPlaceholders warmthPlaceholders;
+
+    @Override
+    public Map<String, Function<OfflinePlayer, String>> placeholders() {
+        if (warmthPlaceholders == null) {
+            warmthPlaceholders = new WarmthPlaceholders(engine);
+        }
+        WarmthPlaceholders wp = warmthPlaceholders;
+        return Map.of(
+                "warmth_state", p -> wp.stateValue(p.getUniqueId()),
+                "warmth_value", p -> wp.warmthValue(p.getUniqueId()),
+                "frostbite", p -> wp.frostbiteValue(p.getUniqueId()),
+                "eat", p -> wp.eatValue(p.getUniqueId()),
+                "clo_total", p -> wp.cloTotalValue(p.getUniqueId()));
     }
 
     @Override
@@ -113,6 +134,11 @@ public final class TemperatureModule implements Module {
     private void tickAll() {
         long tick = ++worldTick;
         AmbientIndex.Snapshot ambient = ambientIndex.snapshot();
+        // Resolve the storm bridge once per tick (Storm registers "storm-weather" lazily).
+        StormWeatherProvider stormWeather = api.service("storm-weather")
+                .filter(StormWeatherProvider.class::isInstance)
+                .map(StormWeatherProvider.class::cast)
+                .orElse(null);
         for (Player p : plugin.getServer().getOnlinePlayers()) {
             if (!p.isOnline()) {
                 continue;
@@ -126,17 +152,29 @@ public final class TemperatureModule implements Module {
             double altitude = EatCalculator.altitudeDelta(y, 16);
             double nightDelta = isNight(p.getWorld()) ? EatCalculator.DEFAULT_NIGHT_DELTA : 0;
             String biome = p.getLocation().getBlock().getBiome().getKey().asString();
+            double stormDelta = 0d;
+            double windFactor = 0d;
+            boolean snowing = false;
+            if (stormWeather != null) {
+                StormClimate c = stormWeather.climateAt(
+                        p.getWorld().getName(),
+                        p.getLocation().getBlockX(),
+                        p.getLocation().getBlockZ());
+                stormDelta = c.stormDelta();
+                windFactor = c.windFactor();
+                snowing = c.snowing();
+            }
             WarmthInput input = new WarmthInput(
                     ambient.biomeBase(biome),
                     nightDelta,
                     altitude,
-                    0,                       // stormDelta (Storm not online yet)
-                    0,                       // sectorModifier (Storm not online yet)
-                    0,                       // windFactor (calm)
+                    stormDelta,               // stormDelta (from SectorWeather.eatDelta)
+                    0,                       // sectorModifier (reserved)
+                    windFactor,              // windChill multiplier
                     ExposureVerdict.EXPOSED, // shelter verdict (Shelter not online yet)
                     java.util.List.of(),     // heat sources (Shelter not online yet)
                     0,                       // cloTotal (gear not wired yet)
-                    false);                  // snowing (Storm not online yet)
+                    snowing);                // snowing (from Storm state)
             long nowMillis = System.currentTimeMillis();
             net.emberhold.temperature.api.TempState st = engine.tick(p.getUniqueId(), input, DT_SECONDS, nowMillis);
             applyFrostbite(p, st.frostbiteStacks(), nowMillis);

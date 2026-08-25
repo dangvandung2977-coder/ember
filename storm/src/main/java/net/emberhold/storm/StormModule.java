@@ -1,13 +1,20 @@
 package net.emberhold.storm;
 
 import net.emberhold.core.api.EmberApi;
+import net.emberhold.core.api.EmberPlaceholderSource;
 import net.emberhold.core.api.Module;
 import net.emberhold.core.api.ScheduledTask;
 import net.emberhold.storm.api.ForecastApi;
+import net.emberhold.storm.api.SectorWeather;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -19,7 +26,7 @@ import java.util.function.Supplier;
  * The director/forecast are reachable by admin commands and the Temperature bridge via
  * {@link #director()} / {@link #forecast()}.</p>
  */
-public final class StormModule implements Module {
+public final class StormModule implements Module, EmberPlaceholderSource {
 
     /** Director period (spec §2: every 2 s = 40 ticks). */
     public static final long PERIOD_TICKS = 40L;
@@ -62,6 +69,9 @@ public final class StormModule implements Module {
         persistTask = api.schedulers().global(this::saveSnapshot, PERSIST_TICKS, PERSIST_TICKS);
         // Register the /storm command surface (spec §5).
         api.commands().register(new StormCommand(plugin, this));
+        // Export sector weather to the Temperature bridge (spec 03 §1). Temperature reads
+        // "storm-weather" lazily each tick, so registration before its first tick suffices.
+        api.registerService("storm-weather", new StormWeatherProviderImpl(director));
     }
 
     @Override
@@ -111,5 +121,38 @@ public final class StormModule implements Module {
 
     public net.emberhold.core.api.EmberApi api() {
         return api;
+    }
+
+    @Override
+    public Map<String, Function<OfflinePlayer, String>> placeholders() {
+        ForecastApi fc = forecast;
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        // Forecast placeholders are bundle-wide (not per-player), resolve once.
+        final List<net.emberhold.storm.api.ForecastEvent> next =
+                fc != null ? fc.next24h() : List.of();
+        final long now = nowEpochSec;
+        var m = new java.util.HashMap<String, Function<OfflinePlayer, String>>();
+        if (director != null) {
+            m.put("storm_state", p -> view(weatherFor(p)).state().name());
+            m.put("storm_eat", p -> String.format("%.1f", weatherFor(p).eatDelta()));
+            m.put("storm_wind", p -> String.format("%.1f", weatherFor(p).windFactor()));
+            m.put("sector", p -> view(weatherFor(p)).sectorClass());
+        }
+        m.put("forecast_next_state", p -> StormPlaceholders.forecastNextState(next));
+        m.put("forecast_next_in", p -> StormPlaceholders.forecastNextIn(now, next));
+        return m;
+    }
+
+    /** Resolve the sector weather for an online player; calm for offline or when no director. */
+    private SectorWeather weatherFor(OfflinePlayer p) {
+        if (director != null && p instanceof Player pl && pl.isOnline()) {
+            Location loc = pl.getLocation();
+            return director.weatherAt(loc.getX(), loc.getZ());
+        }
+        return SectorWeather.calm(System.currentTimeMillis());
+    }
+
+    private static StormPlaceholders.Context view(SectorWeather w) {
+        return new StormPlaceholders.Context("", w.state(), w.eatDelta(), w.windFactor());
     }
 }

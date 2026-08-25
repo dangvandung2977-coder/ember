@@ -162,6 +162,11 @@ public final class StormDirector {
         return weatherStore.get(s).orElse(SectorWeather.calm(tick));
     }
 
+    /** Resolved sector weather at a block position (used by the Temperature bridge). */
+    public SectorWeather weatherAt(double blockX, double blockZ) {
+        return currentWeather(Sector.ofBlock(blockX, blockZ, sectorSize));
+    }
+
     public boolean hasTension(UUID id) {
         return tension.containsKey(id);
     }

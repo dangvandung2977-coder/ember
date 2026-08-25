@@ -5,6 +5,8 @@ api-version: '1.21'
 description: EmberHold winter survival engine. Single deployable plugin aggregating all core modules.
 authors: [ EmberHold Team ]
 website: https://github.com/emberhold/emberhold
+softdepend:
+  - PlaceholderAPI
 # NOTE: Paper plugins do NOT support YAML command declarations (commands: is forbidden).
 # Commands are registered at runtime via JavaPlugin#registerCommand (see SimpleCommandService).
 permissions:

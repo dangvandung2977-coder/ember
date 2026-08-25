@@ -13,6 +13,8 @@ subprojects {
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
+        // PlaceholderAPI API (soft dep, optional integration for the PlaceholderExpansion).
+        maven("https://repo.extendedclip.com/releases/")
     }
 
     // Toolchain via the extension (bare `java {}` is ambiguous inside subprojects).

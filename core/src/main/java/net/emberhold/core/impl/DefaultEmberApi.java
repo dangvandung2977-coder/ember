@@ -78,6 +78,11 @@ public final class DefaultEmberApi implements EmberApi {
         return registry.service(moduleId, Object.class);
     }
 
+    @Override
+    public void registerService(String moduleId, Object service) {
+        registry.registerService(moduleId, service);
+    }
+
     public ServiceRegistry registry() {
         return registry;
     }

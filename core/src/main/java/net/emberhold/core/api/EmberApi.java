@@ -27,4 +27,11 @@ public interface EmberApi {
 
     /** Look up another module's exported service by module id (e.g. "storm", "temperature"). */
     Optional<Object> service(String moduleId);
+
+    /**
+     * Export a service object so other modules can reach it via {@link #service(String)}.
+     * Registering a service after all modules are {@code onEnable}d resolves it lazily (a
+     * module that reads the service each tick picks it up as soon as it is registered).
+     */
+    void registerService(String moduleId, Object service);
 }

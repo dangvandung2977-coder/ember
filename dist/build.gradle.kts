@@ -23,6 +23,9 @@ dependencies {
     implementation(project(":events"))
     implementation(project(":settlement"))
     implementation(project(":economy"))
+    // Shared "ember" PlaceholderExpansion lives in core but extends a PlaceholderAPI type;
+    // compileOnly (not bundled) so dist can see the supertype without shipping PAPI.
+    compileOnly("me.clip:placeholderapi:2.12.3")
 }
 
 // Helper: merge all META-INF/services/* across a list of jar files, returning
