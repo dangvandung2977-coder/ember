@@ -1,0 +1,13 @@
+# EmberCore configuration.
+# Path: plugins/EmberCore/config.yml (auto-created on first boot).
+
+ember:
+  dev:
+    # Throw IllegalStateException (log ERROR) if blocking I/O runs on the game thread.
+    # Keep ON during development; turn OFF in production for zero overhead.
+    blocking-guard: false
+  db:
+    # Leave empty to disable DB in T1. T3 wires the full JDBC config + Flyway.
+    url: ""
+    user: "postgres"
+    password: "postgres"

@@ -1,0 +1,17 @@
+name: EmberHold
+version: '0.1.0'
+main: net.emberhold.EmberPlugin
+api-version: '1.21'
+description: EmberHold winter survival engine. Single deployable plugin aggregating all core modules.
+authors: [ EmberHold Team ]
+website: https://github.com/emberhold/emberhold
+# NOTE: Paper plugins do NOT support YAML command declarations (commands: is forbidden).
+# Commands are registered at runtime via JavaPlugin#registerCommand (see SimpleCommandService).
+permissions:
+  ember.admin:
+    description: Access to /ember admin commands.
+    default: op
+  ember.forecast.use:
+    description: Use the forecast command (temperature module).
+    default: true
+

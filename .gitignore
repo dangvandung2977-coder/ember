@@ -1,0 +1,21 @@
+# Build output (gradle). The runnable fat jar is force-added separately.
+.gradle/
+/build/
+**/build/
+out/
+bin/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS / scratch
+*.log
+.DS_Store
+Thumbs.db
+
+# Toolchain (JDK/Gradle) lives outside this repo under the workspace root.
+
+# Stale backup not part of the build
+build_bak.gradle.kts
